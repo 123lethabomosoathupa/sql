@@ -1,0 +1,4 @@
+geo_name|state_us_abbreviation
+Millbrook City|AL
+Millville Borough|NJ
+Millard County|UT

@@ -1,0 +1,13 @@
+geo_name|internal_point_lat|internal_point_lon
+Autauga County|32.5322320|-86.6464395
+Baldwin County|30.6589610|-87.7460507
+Millbrook City|32.4840210|-86.3688140
+Millville Borough|39.4020150|-75.0399880
+Los Angeles County|34.1980070|-118.2056970
+Harris County|29.8576270|-95.3984860
+King County|47.4908640|-121.8356420
+Maricopa County|33.3484060|-112.4951660
+Cook County|41.8399340|-87.8165690
+Millard County|39.0740100|-113.1000770
+Yukon-Koyukuk Census Area|64.6450200|-153.4940000
+Kalawao County|21.1884000|-156.9754000
