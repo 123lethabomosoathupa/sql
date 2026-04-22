@@ -92,7 +92,7 @@
 -- ----------------------------------------------------------------
 
 -- COPY supervisor_salaries (town, supervisor, salary)
--- FROM ''E:\school\SQL\Classwork\Book1\supervisor_salaries.csv'
+-- FROM 'E:\school\SQL\Classwork\Book1\supervisor_salaries.csv'
 -- WITH (FORMAT CSV, HEADER);
 
 

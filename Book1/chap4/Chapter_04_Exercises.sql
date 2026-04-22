@@ -1,8 +1,3 @@
--- ================================================================
--- CHAPTER 4: Importing and Exporting Data
--- TRY IT YOURSELF - EXERCISES
--- ================================================================
-
 
 -- ----------------------------------------------------------------
 -- Exercise 1:
@@ -15,8 +10,14 @@
 -- to stop the colon inside the title from being treated as a delimiter.
 -- ----------------------------------------------------------------
 
+-- CREATE TABLE movies (
+--     id      INT,
+--     movie   VARCHAR(255),
+--     actor   VARCHAR(255)
+-- );
+
 -- COPY movies
--- FROM 'C:\YourDirectory\movies.txt'
+-- FROM 'E:\school\SQL\Classwork\Book1\movies.txt'
 -- WITH (FORMAT CSV, HEADER, DELIMITER ':', QUOTE '#');
 
 
@@ -33,7 +34,7 @@
 --     ORDER BY housing_unit_count_100_percent DESC
 --     LIMIT 20
 -- )
--- TO 'C:\YourDirectory\us_counties_top20_housing.txt'
+-- TO 'E:\school\SQL\Classwork\Book1\us_counties_top20_housing.txt'
 -- WITH (FORMAT CSV, HEADER, DELIMITER '|');
 
 

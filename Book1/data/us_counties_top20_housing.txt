@@ -1,0 +1,21 @@
+geo_name|state_us_abbreviation|housing_unit_count_100_percent
+Los Angeles County|CA|3524236
+Los Angeles County|CA|3524236
+Cook County|IL|2187781
+Cook County|IL|2187781
+Harris County|TX|1705782
+Harris County|TX|1705782
+Maricopa County|AZ|1484423
+Maricopa County|AZ|1484423
+King County|WA|857649
+King County|WA|857649
+Baldwin County|AL|104061
+Baldwin County|AL|104061
+Autauga County|AL|22135
+Autauga County|AL|22135
+Millville Borough|NJ|11562
+Millville Borough|NJ|11562
+Millbrook City|AL|5973
+Millbrook City|AL|5973
+Millard County|UT|5286
+Millard County|UT|5286
