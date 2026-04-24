@@ -17,8 +17,10 @@
 -- );
 
 -- COPY movies
--- FROM 'E:\school\SQL\Classwork\Book1\movies.txt'
+-- FROM 'E:\school\SQL\Classwork\Book1\data\movies.txt'
 -- WITH (FORMAT CSV, HEADER, DELIMITER ':', QUOTE '#');
+-- SELECT * FROM movies
+
 
 
 -- ----------------------------------------------------------------
@@ -28,15 +30,10 @@
 -- (Housing units are in the column: housing_unit_count_100_percent)
 -- ----------------------------------------------------------------
 
--- COPY (
---     SELECT geo_name, state_us_abbreviation, housing_unit_count_100_percent
---     FROM us_counties_2010
---     ORDER BY housing_unit_count_100_percent DESC
---     LIMIT 20
--- )
--- TO 'E:\school\SQL\Classwork\Book1\us_counties_top20_housing.txt'
--- WITH (FORMAT CSV, HEADER, DELIMITER '|');
-
+-- SELECT geo_name, state_us_abbreviation, housing_unit_count_100_percent
+-- FROM us_counties_2010
+-- ORDER BY housing_unit_count_100_percent DESC
+-- LIMIT 20;
 
 -- ----------------------------------------------------------------
 -- Exercise 3:

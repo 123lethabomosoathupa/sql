@@ -188,7 +188,7 @@
 -- );
 
 -- COPY us_counties_2000
--- FROM 'C:\YourDirectory\us_counties_2000.csv'
+-- FROM 'E:\school\SQL\Classwork\Book1\data\us_counties_2000.csv'
 -- WITH (FORMAT CSV, HEADER);
 
 -- SELECT c2010.geo_name,
