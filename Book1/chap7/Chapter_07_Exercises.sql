@@ -82,10 +82,7 @@
 -- albums: album_title (searched by title), album_artist (searched by artist)
 -- songs: song_title (searched by title), album_id (used in joins)
 --
--- CREATE INDEX album_title_idx ON albums (album_title);
--- CREATE INDEX album_artist_idx ON albums (album_artist);
--- CREATE INDEX song_title_idx ON songs (song_title);
--- CREATE INDEX songs_album_id_idx ON songs (album_id);
+
 --
 -- Indexes speed up queries on columns used in WHERE and JOIN clauses.
 -- The primary keys already have indexes automatically.
