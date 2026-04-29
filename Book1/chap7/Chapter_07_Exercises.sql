@@ -3,8 +3,9 @@
 -- TRY IT YOURSELF - EXERCISES
 -- ================================================================
 
--- Given these starting tables:
---
+
+-- ----------------------------------------------------------------
+-- Starting tables (as given in the book):
 -- CREATE TABLE albums (
 --     album_id bigserial,
 --     album_catalog_code varchar(100),
@@ -14,19 +15,21 @@
 --     album_genre varchar(40),
 --     album_description text
 -- );
---
 -- CREATE TABLE songs (
 --     song_id bigserial,
 --     song_title text,
 --     song_artist text,
 --     album_id bigint
 -- );
+-- ----------------------------------------------------------------
 
 
 -- ----------------------------------------------------------------
 -- Exercise 1:
--- Modify both CREATE TABLE statements to add primary keys,
--- a foreign key, and additional constraints.
+-- Rewrite both CREATE TABLE statements to add:
+--   - A primary key for each table
+--   - A foreign key linking songs to albums
+--   - Appropriate constraints (NOT NULL, UNIQUE)
 -- ----------------------------------------------------------------
 
 -- CREATE TABLE albums (
@@ -40,10 +43,12 @@
 --     CONSTRAINT album_id_key PRIMARY KEY (album_id),
 --     CONSTRAINT album_catalog_unique UNIQUE (album_catalog_code)
 -- );
+
 -- Reasoning:
--- - album_id is a surrogate primary key (auto-increments).
--- - album_catalog_code is UNIQUE because each album has one code.
--- - title and artist are NOT NULL because an album must have both.
+-- album_id: surrogate primary key (bigserial auto-counts).
+-- album_catalog_code: UNIQUE because each album has one catalog code.
+-- album_title and album_artist: NOT NULL because every album must have both.
+-- album_release_date: nullable — sometimes not known at time of entry.
 
 -- CREATE TABLE songs (
 --     song_id bigserial,
@@ -52,37 +57,47 @@
 --     album_id bigint REFERENCES albums (album_id) ON DELETE CASCADE,
 --     CONSTRAINT song_id_key PRIMARY KEY (song_id)
 -- );
+
 -- Reasoning:
--- - song_id is the primary key.
--- - album_id is a foreign key linking to albums.
--- - ON DELETE CASCADE removes songs if the album is deleted.
--- - song_title and song_artist are NOT NULL.
+-- song_id: surrogate primary key.
+-- album_id: FOREIGN KEY references albums — prevents orphan songs.
+-- ON DELETE CASCADE: if the album is deleted, its songs are deleted too.
+-- song_title and song_artist: NOT NULL — every song must have both.
 
 
 -- ----------------------------------------------------------------
 -- Exercise 2:
--- Could album_catalog_code serve as a natural key?
--- ----------------------------------------------------------------
-
--- Yes — IF we can confirm:
---   1. Every album has a catalog code (no NULLs).
---   2. Each catalog code is unique across all albums.
+-- Could album_catalog_code serve as a natural primary key?
+-- Answer: ONLY if ALL three conditions are true:
+--   1. Every album always has a catalog code (no NULLs ever).
+--   2. Each catalog code is guaranteed to be globally unique.
 --   3. The code never changes once assigned.
--- If all three are true, it can replace album_id as the primary key.
--- In practice, labels and distributors sometimes reuse or change codes,
--- so a surrogate key (album_id) is safer.
+-- In practice, catalog codes can be reissued or changed by labels,
+-- so a surrogate key (album_id) is the safer and more reliable choice.
+-- ----------------------------------------------------------------
 
 
 -- ----------------------------------------------------------------
 -- Exercise 3:
--- Which columns are good candidates for indexes?
+-- Which columns in albums and songs are good candidates for indexes?
+-- Add an index to each one.
+-- Rule: Index columns used frequently in WHERE clauses or JOIN conditions.
 -- ----------------------------------------------------------------
 
--- Good index candidates:
--- albums: album_title (searched by title), album_artist (searched by artist)
--- songs: song_title (searched by title), album_id (used in joins)
---
+-- albums table:
+-- CREATE INDEX album_title_idx ON albums (album_title);
+-- Reason: Users search for albums by title.
 
---
--- Indexes speed up queries on columns used in WHERE and JOIN clauses.
--- The primary keys already have indexes automatically.
+-- CREATE INDEX album_artist_idx ON albums (album_artist);
+-- Reason: Users search and group by artist name.
+
+-- songs table:
+-- CREATE INDEX song_title_idx ON songs (song_title);
+-- Reason: Users search for songs by title.
+
+-- CREATE INDEX songs_album_id_idx ON songs (album_id);
+-- Reason: album_id is the foreign key used in every JOIN between tables.
+-- PostgreSQL does NOT automatically index foreign keys.
+
+-- Note: Primary keys already have indexes created automatically.
+-- Note: The UNIQUE constraint on album_catalog_code also creates an index.

@@ -1,22 +1,16 @@
+-- ================================================================
+-- CHAPTER 2: Try It Yourself Exercises
+-- ================================================================
 
--- ----------------------------------------------------------------
--- Exercise 1:
--- List all teachers grouped by school.
--- Schools in alphabetical order (A-Z).
--- Teachers within each school ordered by last name (A-Z).
--- ----------------------------------------------------------------
+
+-- Exercise 1: Schools A-Z, teachers by last name A-Z within each school.
 
 -- SELECT school, last_name, first_name
 -- FROM teachers
 -- ORDER BY school ASC, last_name ASC;
 
 
--- ----------------------------------------------------------------
--- Exercise 2:
--- Find the one teacher whose first name starts with 'S'
--- AND who earns more than $40,000.
--- (Answer: Samuel Cole)
--- ----------------------------------------------------------------
+-- Exercise 2: Find the teacher whose first name starts with S earning > $40,000.
 
 -- SELECT first_name, last_name, salary
 -- FROM teachers
@@ -24,11 +18,7 @@
 -- AND salary > 40000;
 
 
--- ----------------------------------------------------------------
--- Exercise 3:
--- Show teachers hired on or after January 1, 2010.
--- Ordered from highest salary to lowest.
--- ----------------------------------------------------------------
+-- Exercise 3: Teachers hired since Jan 1 2010, highest to lowest salary.
 
 -- SELECT first_name, last_name, hire_date, salary
 -- FROM teachers

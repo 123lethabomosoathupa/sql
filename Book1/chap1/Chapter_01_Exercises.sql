@@ -1,9 +1,9 @@
+-- ================================================================
+-- CHAPTER 1: Try It Yourself Exercises
+-- ================================================================
 
--- ----------------------------------------------------------------
--- Exercise 1:
--- Build a zoo database with two tables:
--- one for animal types, one for individual animals.
--- ----------------------------------------------------------------
+
+-- Exercise 1: Create a zoo database with two related tables.
 
 -- CREATE TABLE animal_types (
 --     animal_type_id bigserial,
@@ -22,11 +22,7 @@
 -- );
 
 
--- ----------------------------------------------------------------
--- Exercise 2:
--- Insert sample data, then cause an intentional error
--- by removing a comma to see what PostgreSQL reports.
--- ----------------------------------------------------------------
+-- Exercise 2: Insert data, then intentionally break it with a missing comma.
 
 -- Correct inserts:
 -- INSERT INTO animal_types (common_name, scientific_name, conservation_status)
@@ -39,11 +35,11 @@
 --        (2, 'Scales', 'Male', '2008-07-20', 'Reptile House'),
 --        (3, 'Dash', 'Male', '2015-11-02', 'Big Cat Country');
 
--- Intentional error (comma removed after 'Male'):
+-- Intentional error (missing comma after 'Male'):
 -- INSERT INTO animals (animal_type_id, name, gender, birth_date, enclosure)
 -- VALUES (3, 'Dash', 'Male' '2015-11-02', 'Big Cat Country');
 -- ^ ERROR: syntax error at or near "'2015-11-02'"
 
--- View the data:
+-- View data:
 -- SELECT * FROM animal_types;
 -- SELECT * FROM animals;
