@@ -1,7 +1,7 @@
 -- ================================================================
 -- CHAPTER 9: Inspecting and Modifying Data
 -- MAIN CODE
--- File paths set to: E:\school\SQL\Classwork\Book1\
+
 -- ================================================================
 -- NOTE: Download from https://www.nostarch.com/practicalSQL/
 --   MPI_Directory_by_Establishment_Name.csv
@@ -26,7 +26,7 @@
 -- );
 
 -- COPY meat_poultry_egg_inspect
--- FROM 'E:\school\SQL\Classwork\Book1\MPI_Directory_by_Establishment_Name.csv'
+-- FROM 'E:\school\SQL\Classwork\Book1\data\MPI_Directory_by_Establishment_Name.csv'
 -- WITH (FORMAT CSV, HEADER, DELIMITER ',');
 
 -- CREATE INDEX company_idx ON meat_poultry_egg_inspect (company);
