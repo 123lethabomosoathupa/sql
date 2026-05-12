@@ -5,7 +5,11 @@
 -- Requires: nyc_yellow_taxi_trips_2016_06_01 table from Chapter 11
 -- SET timezone TO 'US/Eastern'; before running taxi queries
 
-
+-- Chapter 11 focuses on working with dates and times in SQL.
+--  It explains how to use date and time data types, extract parts of dates,
+--   perform calculations with timestamps, and work with time zones. 
+--   The chapter also shows how to analyze real-world data, such as taxi and train schedules,
+--    to find patterns over time.
 -- ----------------------------------------------------------------
 -- Exercise 1:
 -- Calculate how long each taxi ride lasted using the pickup and
@@ -14,22 +18,22 @@
 -- likely data entry errors worth flagging.
 -- ----------------------------------------------------------------
 
--- SET timezone TO 'US/Eastern';
+SET timezone TO 'US/Eastern';
 
--- SELECT trip_id,
---        tpep_pickup_datetime,
---        tpep_dropoff_datetime,
---        tpep_dropoff_datetime - tpep_pickup_datetime AS trip_duration
--- FROM nyc_yellow_taxi_trips_2016_06_01
--- ORDER BY trip_duration DESC;
+SELECT trip_id,
+       tpep_pickup_datetime,
+       tpep_dropoff_datetime,
+       tpep_dropoff_datetime - tpep_pickup_datetime AS trip_duration
+FROM nyc_yellow_taxi_trips_2016_06_01
+ORDER BY trip_duration DESC;
 
 -- Also check the shortest (possibly negative) at the other end:
--- SELECT trip_id,
---        tpep_pickup_datetime,
---        tpep_dropoff_datetime,
---        tpep_dropoff_datetime - tpep_pickup_datetime AS trip_duration
--- FROM nyc_yellow_taxi_trips_2016_06_01
--- ORDER BY trip_duration ASC;
+SELECT trip_id,
+       tpep_pickup_datetime,
+       tpep_dropoff_datetime,
+       tpep_dropoff_datetime - tpep_pickup_datetime AS trip_duration
+FROM nyc_yellow_taxi_trips_2016_06_01
+ORDER BY trip_duration ASC;
 
 
 -- ----------------------------------------------------------------
@@ -40,21 +44,21 @@
 -- Use AT TIME ZONE to convert the timestamp.
 -- ----------------------------------------------------------------
 
--- SELECT
---     '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
---         AS "New York midnight",
---     '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
---         AT TIME ZONE 'Europe/London'
---         AS "London",
---     '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
---         AT TIME ZONE 'Africa/Johannesburg'
---         AS "Johannesburg",
---     '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
---         AT TIME ZONE 'Europe/Moscow'
---         AS "Moscow",
---     '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
---         AT TIME ZONE 'Australia/Melbourne'
---         AS "Melbourne";
+SELECT
+    '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
+        AS "New York midnight",
+    '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
+        AT TIME ZONE 'Europe/London'
+        AS "London",
+    '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
+        AT TIME ZONE 'Africa/Johannesburg'
+        AS "Johannesburg",
+    '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
+        AT TIME ZONE 'Europe/Moscow'
+        AS "Moscow",
+    '2100-01-01 00:00:00' AT TIME ZONE 'US/Eastern'
+        AT TIME ZONE 'Australia/Melbourne'
+        AS "Melbourne";
 
 -- Note: Results depend on daylight saving time rules at that future date.
 -- New York is UTC-5 in winter. Johannesburg is UTC+2 = 7 hours ahead.
@@ -70,33 +74,33 @@
 -- passing it to corr() (corr() requires numeric input, not interval).
 -- ----------------------------------------------------------------
 
--- SET timezone TO 'US/Eastern';
+SET timezone TO 'US/Eastern';
 
--- SELECT
---     round(
---         corr(
---             total_amount,
---             date_part('epoch', tpep_dropoff_datetime - tpep_pickup_datetime)
---         )::numeric, 3
---     ) AS trip_time_total_r,
---
---     round(
---         regr_r2(
---             total_amount,
---             date_part('epoch', tpep_dropoff_datetime - tpep_pickup_datetime)
---         )::numeric, 3
---     ) AS trip_time_total_r2,
---
---     round(
---         corr(total_amount, trip_distance)::numeric, 3
---     ) AS trip_dist_total_r,
---
---     round(
---         regr_r2(total_amount, trip_distance)::numeric, 3
---     ) AS trip_dist_total_r2
--- FROM nyc_yellow_taxi_trips_2016_06_01
--- WHERE (tpep_dropoff_datetime - tpep_pickup_datetime)
---       <= '3 hours'::interval;
+SELECT
+    round(
+        corr(
+            total_amount,
+            date_part('epoch', tpep_dropoff_datetime - tpep_pickup_datetime)
+        )::numeric, 3
+    ) AS trip_time_total_r,
+
+    round(
+        regr_r2(
+            total_amount,
+            date_part('epoch', tpep_dropoff_datetime - tpep_pickup_datetime)
+        )::numeric, 3
+    ) AS trip_time_total_r2,
+
+    round(
+        corr(total_amount, trip_distance)::numeric, 3
+    ) AS trip_dist_total_r,
+
+    round(
+        regr_r2(total_amount, trip_distance)::numeric, 3
+    ) AS trip_dist_total_r2
+FROM nyc_yellow_taxi_trips_2016_06_01
+WHERE (tpep_dropoff_datetime - tpep_pickup_datetime)
+      <= '3 hours'::interval;
 
 -- Expected: Both duration and distance correlate positively with fare.
 -- Distance is likely the stronger predictor (higher r) since fares
