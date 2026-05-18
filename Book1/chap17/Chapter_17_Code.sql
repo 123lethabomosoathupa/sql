@@ -1,119 +1,141 @@
 -- ================================================================
 -- CHAPTER 17: Maintaining Your Database
--- MAIN CODE + EXERCISES
+-- MAIN CODE
+-- ================================================================
+-- Run these inside psql connected to the analysis database:
+--   \c analysis
 -- ================================================================
 
 
 -- ================================================================
--- VACUUM: Recovering Unused Space
+-- LISTING 17-1: Create a table to test vacuuming
 -- ================================================================
 
--- Create a test table:
--- CREATE TABLE vacuum_test (integer_column integer);
+CREATE TABLE vacuum_test (
+    integer_column integer
+);
 
--- Check size (should be 0 bytes when empty):
--- SELECT pg_size_pretty(pg_total_relation_size('vacuum_test'));
 
--- Or via command line in psql:
+-- ================================================================
+-- LISTING 17-2: Check the size of vacuum_test
+-- ================================================================
+-- Run this after each step to track size changes.
+
+SELECT pg_size_pretty(
+    pg_total_relation_size('vacuum_test')
+);
+-- Expected: 0 bytes (empty table)
+
+-- Alternatively, from psql command line (not inside SQL):
 -- \dt+ vacuum_test
 
--- Insert 500,000 rows:
--- INSERT INTO vacuum_test SELECT * FROM generate_series(1,500000);
 
--- Check size (should be ~17 MB):
--- SELECT pg_size_pretty(pg_total_relation_size('vacuum_test'));
+-- ================================================================
+-- LISTING 17-3: Insert 500,000 rows into vacuum_test
+-- ================================================================
 
--- Update all rows (creates dead rows — size doubles to ~35 MB):
--- UPDATE vacuum_test SET integer_column = integer_column + 1;
--- SELECT pg_size_pretty(pg_total_relation_size('vacuum_test'));
+INSERT INTO vacuum_test
+SELECT * FROM generate_series(1, 500000);
 
--- Check autovacuum activity:
--- SELECT relname, last_vacuum, last_autovacuum, vacuum_count, autovacuum_count
--- FROM pg_stat_all_tables
--- WHERE relname = 'vacuum_test';
+-- Re-run Listing 17-2 after this.
+-- Expected size: ~17 MB
 
--- Run VACUUM manually:
--- VACUUM vacuum_test;
 
--- Run VACUUM FULL (returns space to disk, table goes back to ~17 MB):
--- VACUUM FULL vacuum_test;
--- SELECT pg_size_pretty(pg_total_relation_size('vacuum_test'));
+-- ================================================================
+-- LISTING 17-4: Update all rows (causes dead rows / table bloat)
+-- ================================================================
 
--- VACUUM with VERBOSE output:
--- VACUUM VERBOSE vacuum_test;
+UPDATE vacuum_test
+SET integer_column = integer_column + 1;
 
--- VACUUM entire database:
+-- Re-run Listing 17-2 after this.
+-- Expected size: ~35 MB (doubled due to dead rows)
+
+
+-- ================================================================
+-- LISTING 17-5: Check autovacuum statistics for vacuum_test
+-- ================================================================
+-- Wait at least 1 minute after the UPDATE before running this,
+-- so autovacuum has time to fire.
+
+SELECT relname,
+       last_vacuum,
+       last_autovacuum,
+       vacuum_count,
+       autovacuum_count
+FROM pg_stat_all_tables
+WHERE relname = 'vacuum_test';
+
+
+-- ================================================================
+-- LISTING 17-6: Run VACUUM manually
+-- ================================================================
+-- VACUUM marks dead rows as reusable but does NOT shrink table on disk.
+
+VACUUM vacuum_test;
+
+-- Re-run Listing 17-5 to confirm last_vacuum is now populated.
+-- Re-run Listing 17-2 — size will still be ~35 MB (VACUUM doesn't shrink).
+
+
+-- ================================================================
+-- LISTING 17-7: Run VACUUM FULL to reclaim disk space
+-- ================================================================
+-- VACUUM FULL rewrites the table and actually shrinks it on disk.
+-- NOTE: Locks the table — no other operations can run during this.
+
+VACUUM FULL vacuum_test;
+
+-- Re-run Listing 17-2 after this.
+-- Expected: back to ~17 MB
+
+
+-- ================================================================
+-- LISTING 17-8: Find location of postgresql.conf
+-- ================================================================
+
+SHOW config_file;
+
+-- Copy the path shown, then open the file in a text editor (not Word).
+-- On Windows it will be somewhere inside E:\Postegre\data\postgresql.conf
+
+
+-- ================================================================
+-- LISTING 17-9: Sample settings to look for inside postgresql.conf
+-- ================================================================
+-- These are NOT SQL — they are lines inside the postgresql.conf file.
+-- Open the file and search for each setting name.
+
+-- datestyle = 'iso, mdy'
+-- timezone = 'Africa/Johannesburg'        <-- change this to match your zone
+-- default_text_search_config = 'pg_catalog.english'
+
+-- After editing postgresql.conf, reload settings from CMD:
+--   pg_ctl reload -D "E:\Postegre\data"
+
+
+-- ================================================================
+-- BONUS: Useful maintenance queries
+-- ================================================================
+
+-- Check sizes of ALL tables in the analysis database:
+SELECT relname AS table_name,
+       pg_size_pretty(pg_total_relation_size(relid)) AS total_size
+FROM pg_stat_user_tables
+ORDER BY pg_total_relation_size(relid) DESC;
+
+-- Run ANALYZE manually (updates query planner statistics):
+ANALYZE vacuum_test;
+
+-- Run VACUUM on the entire database (omit table name):
 -- VACUUM;
 
--- VACUUM with ANALYZE (also updates query planner statistics):
--- VACUUM ANALYZE vacuum_test;
+-- Run VACUUM VERBOSE for detailed output:
+-- VACUUM VERBOSE vacuum_test;
 
 
 -- ================================================================
--- CHANGING SERVER SETTINGS (postgresql.conf)
+-- CLEANUP: Drop the test table when done
 -- ================================================================
 
--- Find the location of postgresql.conf:
--- SHOW config_file;
-
--- Find the data directory:
--- SHOW data_directory;
-
--- View current timezone setting:
--- SHOW timezone;
-
--- View current date style:
--- SHOW datestyle;
-
--- Some key settings inside postgresql.conf:
---   datestyle = 'iso, mdy'              -- Date display format
---   timezone = 'US/Eastern'             -- Server time zone
---   default_text_search_config = 'pg_catalog.english'  -- Full text language
---   autovacuum = on                     -- Enable auto vacuum (default)
-
--- After editing postgresql.conf, reload settings from command line (not psql):
--- Windows:   pg_ctl reload -D "C:\path\to\data\"
--- macOS/Linux: pg_ctl reload -D '/path/to/data/'
-
-
--- ================================================================
--- BACKING UP AND RESTORING (run from system command prompt, not psql)
--- ================================================================
-
--- Back up entire analysis database (custom compressed format):
---   pg_dump -d analysis -U postgres -Fc > analysis_backup.sql
-
--- Back up a single table:
---   pg_dump -t 'train_rides' -d analysis -U postgres -Fc > train_backup.sql
-
--- Restore the analysis database:
---   pg_restore -C -d postgres -U postgres analysis_backup.sql
-
--- Additional pg_dump options:
---   -Fp   Plain text output (readable SQL)
---   -Fc   Custom compressed format (default recommendation)
---   -Fd   Directory format
---   -Ft   Tar format
-
-
--- ================================================================
--- CHAPTER 17: Try It Yourself Exercise
--- ================================================================
-
--- Back up the gis_analysis database created in Chapter 14:
---   pg_dump -d gis_analysis -U postgres -Fc > gis_analysis_backup.sql
-
--- Drop the original (to practice restore):
---   dropdb -U postgres gis_analysis
-
--- Restore it:
---   pg_restore -C -d postgres -U postgres gis_analysis_backup.sql
-
--- Also try backing up individual tables:
---   pg_dump -t 'farmers_markets' -d gis_analysis -U postgres -Fc > farmers_markets_backup.sql
-
--- Open the backup file in a text editor to see how pg_dump organizes:
--- - CREATE TABLE statements
--- - COPY commands for inserting data
--- - Index creation statements
--- - Constraint definitions
+DROP TABLE vacuum_test;
