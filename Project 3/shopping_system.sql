@@ -5,35 +5,93 @@
 
 
 -- ============================================================
+-- PART 1: DROP TABLES (in dependency order)
+-- ============================================================
+
+DROP TABLE IF EXISTS order_details;
+DROP TABLE IF EXISTS order_header;
+DROP TABLE IF EXISTS cart;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS products_menu;
+
+
+-- ============================================================
 -- PART 2: CREATE TABLES
 -- ============================================================
 
+-- Create a table to store all products available on the menu
 CREATE TABLE products_menu (
-    id    SERIAL PRIMARY KEY,
-    name  VARCHAR(100) NOT NULL,
+
+    -- Unique ID for each product (auto-increments)
+    id SERIAL PRIMARY KEY,
+
+    -- Name of the product
+    -- VARCHAR(100) allows text up to 100 characters
+    -- NOT NULL means the field cannot be empty
+    name VARCHAR(100) NOT NULL,
+
+    -- Price of the product
+    -- DECIMAL(10,2) stores numbers with 2 decimal places
+    -- Example: 199.99
+    -- NOT NULL means every product must have a price
     price DECIMAL(10, 2) NOT NULL
 );
 
+-- Create a table to store system users/customers
 CREATE TABLE users (
-    user_id  SERIAL PRIMARY KEY,
+
+    -- Unique ID for each user (auto-increments)
+    user_id SERIAL PRIMARY KEY,
+
+    -- Username of the customer/user
+    -- Cannot be empty because of NOT NULL
     username VARCHAR(100) NOT NULL
 );
 
+-- Create a table to store shopping cart items
 CREATE TABLE cart (
+
+    -- ID of the product added to the cart
+    -- References the id column from products_menu
+    -- FOREIGN KEY relationship ensures valid products only
     product_id INT PRIMARY KEY REFERENCES products_menu(id),
-    qty        INT NOT NULL DEFAULT 1
+
+    -- Quantity of the product in the cart
+    -- DEFAULT 1 means if no value is provided, quantity becomes 1
+    qty INT NOT NULL DEFAULT 1
 );
 
+-- Create a table to store order information
 CREATE TABLE order_header (
-    order_id   SERIAL PRIMARY KEY,
-    user_id    INT NOT NULL REFERENCES users(user_id),
+
+    -- Unique ID for each order
+    order_id SERIAL PRIMARY KEY,
+
+    -- Stores which user placed the order
+    -- References user_id from users table
+    user_id INT NOT NULL REFERENCES users(user_id),
+
+    -- Date and time when the order was created
+    -- CURRENT_TIMESTAMP automatically inserts current date & time
     order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create a table to store products inside each order
 CREATE TABLE order_details (
+
+    -- Stores the order this item belongs to
+    -- References order_id from order_header table
     order_header_id INT NOT NULL REFERENCES order_header(order_id),
-    product_id      INT NOT NULL REFERENCES products_menu(id),
-    qty             INT NOT NULL,
+
+    -- Stores the product included in the order
+    -- References id from products_menu table
+    product_id INT NOT NULL REFERENCES products_menu(id),
+
+    -- Quantity of the product ordered
+    qty INT NOT NULL,
+
+    -- Composite Primary Key
+    -- Prevents duplicate products in the same order
     PRIMARY KEY (order_header_id, product_id)
 );
 
@@ -56,29 +114,38 @@ INSERT INTO users (user_id, username) VALUES
 -- ============================================================
 
 -- Scenario A: Add a Coke  (product does NOT yet exist in cart → insert qty 1)
-IF EXISTS (SELECT * FROM cart WHERE product_id = 1) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (1, 1);
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 1) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (1, 1);
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: Coke qty = 1
 
 -- Scenario B: Add a Coke again  (product EXISTS → increment qty)
-IF EXISTS (SELECT * FROM cart WHERE product_id = 1) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (1, 1);
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 1) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (1, 1);
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: Coke qty = 2
 
 -- Scenario C: Add Chips  (product does NOT yet exist in cart → insert qty 1)
-IF EXISTS (SELECT * FROM cart WHERE product_id = 2) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 2;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (2, 1);
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 2) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 2;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (2, 1);
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: Coke qty 2, Chips qty 1
 
@@ -90,30 +157,38 @@ SELECT * FROM cart;   -- expected: Coke qty 2, Chips qty 1
 -- Remove one Coke:
 --   qty > 1  → subtract 1
 --   qty = 1  → delete the row entirely
-
-IF EXISTS (SELECT * FROM cart WHERE product_id = 1 AND qty > 1) THEN
-    UPDATE cart SET qty = qty - 1 WHERE product_id = 1;
-ELSE
-    DELETE FROM cart WHERE product_id = 1;
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 1 AND qty > 1) THEN
+        UPDATE cart SET qty = qty - 1 WHERE product_id = 1;
+    ELSE
+        DELETE FROM cart WHERE product_id = 1;
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: Coke qty 1, Chips qty 1
 
 -- Remove the last Coke (qty is now 1 → full row deleted)
-IF EXISTS (SELECT * FROM cart WHERE product_id = 1 AND qty > 1) THEN
-    UPDATE cart SET qty = qty - 1 WHERE product_id = 1;
-ELSE
-    DELETE FROM cart WHERE product_id = 1;
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 1 AND qty > 1) THEN
+        UPDATE cart SET qty = qty - 1 WHERE product_id = 1;
+    ELSE
+        DELETE FROM cart WHERE product_id = 1;
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: only Chips qty 1
 
 -- Re-add Coke so the cart has items for checkout demos
-IF EXISTS (SELECT * FROM cart WHERE product_id = 1) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (1, 2);
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 1) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (1, 2);
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: Coke qty 2, Chips qty 1
 
@@ -144,24 +219,34 @@ SELECT * FROM order_details;  -- should show Coke x2 + Chips x1
 -- SECOND SHOPPING SESSION  (user 2 = Sheryl places ORDER 2)
 -- ============================================================
 
--- Sheryl adds two Chips and one Coke
-IF EXISTS (SELECT * FROM cart WHERE product_id = 2) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 2;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (2, 1);
-END IF;
+-- Sheryl adds two Chips
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 2) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 2;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (2, 1);
+    END IF;
+END $$;
 
-IF EXISTS (SELECT * FROM cart WHERE product_id = 2) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 2;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (2, 1);
-END IF;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 2) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 2;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (2, 1);
+    END IF;
+END $$;
 
-IF EXISTS (SELECT * FROM cart WHERE product_id = 1) THEN
-    UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
-ELSE
-    INSERT INTO cart (product_id, qty) VALUES (1, 1);
-END IF;
+-- Sheryl adds one Coke
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM cart WHERE product_id = 1) THEN
+        UPDATE cart SET qty = qty + 1 WHERE product_id = 1;
+    ELSE
+        INSERT INTO cart (product_id, qty) VALUES (1, 1);
+    END IF;
+END $$;
 
 SELECT * FROM cart;   -- expected: Chips qty 2, Coke qty 1
 
@@ -195,9 +280,9 @@ SELECT
     od.qty,
     (pm.price * od.qty) AS line_total
 FROM order_header  oh
-INNER JOIN users          u  ON u.user_id    = oh.user_id
+INNER JOIN users          u  ON u.user_id          = oh.user_id
 INNER JOIN order_details  od ON od.order_header_id = oh.order_id
-INNER JOIN products_menu  pm ON pm.id        = od.product_id
+INNER JOIN products_menu  pm ON pm.id              = od.product_id
 WHERE oh.order_id = 1
 ORDER BY od.product_id;
 
@@ -211,9 +296,9 @@ SELECT
     od.qty,
     (pm.price * od.qty) AS line_total
 FROM order_header  oh
-INNER JOIN users          u  ON u.user_id    = oh.user_id
+INNER JOIN users          u  ON u.user_id          = oh.user_id
 INNER JOIN order_details  od ON od.order_header_id = oh.order_id
-INNER JOIN products_menu  pm ON pm.id        = od.product_id
+INNER JOIN products_menu  pm ON pm.id              = od.product_id
 WHERE DATE(oh.order_date) = CURRENT_DATE
 ORDER BY oh.order_id, od.product_id;
 
